@@ -33,7 +33,7 @@ RUN apt-get update && \
         apt-get clean && \
         rm -f /usr/bin/python /usr/bin/pip && \
         ln -s /usr/bin/python3.8 /usr/bin/python && \
-        ln -s /usr/bin/pip3 /usr/bin/pip 
+        ln -s /usr/bin/pip3 /usr/bin/pip
 
 # Install .NET Core and Java for tools/builds
 RUN cd /tmp && \
@@ -45,8 +45,22 @@ RUN cd /tmp && \
     rm packages-microsoft-prod.deb
 RUN apt-get install -y dotnet-sdk-3.1
 
+# Install maven 3.8.4
+RUN mkdir -p /usr/share/maven /usr/share/maven/ref && \
+    curl -fsSL -o /tmp/apache-maven.tar.gz https://dlcdn.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz && \
+    tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 && \
+    rm -f /tmp/apache-maven.tar.gz && \
+    ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+
+# Install grade 7.4
+RUN mkdir -p /usr/share/gradle && \
+    curl -fsSl -o /tmp/gradle.bin.zip https://downloads.gradle-dn.com/distributions/gradle-7.4-bin.zip && \
+    unzip -d /usr/share/gradle /tmp/gradle.bin.zip && \
+    rm -f /tmp/gradle.bin.zip && \
+    ln -s /usr/share/gradle/gradle-7.4/bin/gradle /usr/bin/gradle
+
 # Clone our setup and run scripts
-#RUN git clone https://github.com/microsoft/codeql-container /usr/local/startup_scripts
+# RUN git clone https://github.com/microsoft/codeql-container /usr/local/startup_scripts
 RUN mkdir -p /usr/local/startup_scripts
 RUN ls -al /usr/local/startup_scripts
 COPY container /usr/local/startup_scripts/
@@ -76,8 +90,8 @@ RUN CODEQL_VERSION=$(cat /tmp/codeql_version) && \
 ENV PATH="${CODEQL_HOME}/codeql:${PATH}"
 
 # Pre-compile our queries to save time later
-RUN codeql query compile --threads=0 ${CODEQL_HOME}/codeql-repo/*/ql/src/codeql-suites/*.qls --additional-packs=.
-RUN codeql query compile --threads=0 ${CODEQL_HOME}/codeql-go-repo/ql/src/codeql-suites/*.qls --additional-packs=.
+# RUN codeql query compile --threads=0 ${CODEQL_HOME}/codeql-repo/*/ql/src/codeql-suites/*.qls --additional-packs=.
+# RUN codeql query compile --threads=0 ${CODEQL_HOME}/codeql-go-repo/ql/src/codeql-suites/*.qls --additional-packs=.
 
 ENV PYTHONIOENCODING=utf-8
-ENTRYPOINT ["python3", "/usr/local/startup_scripts/startup.py"]
+# ENTRYPOINT ["python3", "/usr/local/startup_scripts/startup.py"]
